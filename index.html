@@ -18,7 +18,7 @@
   --sidebar-w: 260px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; overflow-x:hidden; }
+body { background:var(--paper); color:var(--ink); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
 body::before { content:''; position:fixed; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(0,0,0,0.025) 28px,rgba(0,0,0,0.025) 29px); pointer-events:none; z-index:0; }
 
 /* SIDEBAR */
@@ -37,7 +37,7 @@ body::before { content:''; position:fixed; inset:0; background-image:repeating-l
 #sidebarToggle { display:none; position:fixed; top:0.8rem; left:0.8rem; z-index:200; background:var(--ink); color:var(--paper); border:none; width:2.2rem; height:2.2rem; font-size:1.1rem; cursor:pointer; align-items:center; justify-content:center; }
 
 /* MAIN */
-#main { margin-left:var(--sidebar-w); flex:1; position:relative; z-index:1; }
+#main { margin-left:var(--sidebar-w); min-height:100vh; position:relative; z-index:1; }
 .page { display:none; width:100%; }
 .page.active { display:block; width:100%; padding-bottom:80px; }
 
@@ -291,6 +291,7 @@ body::before { content:''; position:fixed; inset:0; background-image:repeating-l
   #sidebar.open{transform:translateX(0)}
   #sidebarToggle{display:flex}
   #main{margin-left:0}
+  #site-footer{left:0!important}
   .home-hero,.home-intro,.stats-row,.topic-grid,.content-wrap,.page-header{padding-left:1.2rem;padding-right:1.2rem}
   .home-hero{width:100vw}
   .page-header{width:100vw}
@@ -1524,7 +1525,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <footer id="site-footer" style="
   position:fixed;
   bottom:0;
-  left:var(--sidebar-w);
+  left:260px;
   right:0;
   font-family:'Space Mono',monospace;
   background:#0f0e0e;
@@ -1536,7 +1537,7 @@ document.addEventListener('DOMContentLoaded', function() {
   gap:1rem;
   flex-wrap:wrap;
   border-top:1px solid rgba(255,255,255,0.08);
-  z-index:50;
+  z-index:150;
   box-sizing:border-box;
 ">
   <div style="display:flex;flex-direction:column;gap:0.2rem;">
