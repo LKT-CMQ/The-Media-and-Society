@@ -1014,7 +1014,10 @@ function printReport() {
 
   // Print then remove the overlay
   window.print();
-  document.body.removeChild(printDiv);
+  window.addEventListener('afterprint', function handler() {
+    document.body.removeChild(printDiv);
+    window.removeEventListener('afterprint', handler);
+  }, { once: true });
 }
 
 // ===== MIND MAP POPUP DATA =====
