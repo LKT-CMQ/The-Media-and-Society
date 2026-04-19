@@ -305,9 +305,9 @@ body::before { content:''; position:fixed; inset:0; background-image:repeating-l
 
 /* FIX #12: Print — aktive Seite drucken, nicht immer factcheck */
 @media print {
-  /* Wenn printOverlay vorhanden: nur den drucken */
-  body > *:not(#printOverlay) { display:none!important; }
-  #printOverlay { position:static!important; overflow:visible!important; }
+  /* Drucke nur den Print-Inhalt */
+  body > * { display:none!important; }
+  #printOverlay { display:block!important; position:static!important; overflow:visible!important; width:100%!important; height:auto!important; z-index:auto!important; inset:auto!important; }
 }
 </style>
 </head>
@@ -978,8 +978,8 @@ function printReport() {
   const printDiv = document.createElement('div');
   printDiv.id = 'printOverlay';
   printDiv.style.cssText = [
-    'position:fixed', 'inset:0', 'background:#fff', 'z-index:9999',
-    'padding:3rem 4rem', 'overflow-y:auto',
+    'background:#fff',
+    'padding:3rem 4rem',
     "font-family:'DM Sans',sans-serif", 'color:#0f0e0e'
   ].join(';');
 
