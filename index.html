@@ -621,7 +621,7 @@ body::before { content:''; position:fixed; inset:0; background-image:repeating-l
       <div class="report-field"><label class="report-label">Media Literacy Reflection</label><textarea class="report-textarea" id="fc-reflection" placeholder="Why does this type of misinformation spread? Connect to filter bubble, echo chamber, or media bias." style="min-height:75px;"></textarea></div>
       <div class="report-actions">
         <button class="btn-secondary" onclick="clearReport()">Clear</button>
-        <button class="btn-secondary" onclick="window.print()">🖨 Print / PDF</button>
+        <button class="btn-secondary" onclick="printFactCheckReport()">🖨 Print / PDF</button>
       </div>
     </div>
   </div>
@@ -965,6 +965,118 @@ function clearReport() {
   });
   document.querySelectorAll('.verdict-btn').forEach(b => b.classList.remove('selected', 'v-true', 'v-false', 'v-misleading', 'v-unverifiable'));
   verdict = '';
+}
+
+// ===== FACT-CHECK: PRINT / PDF =====
+// Baut aus den Textfeldern ein sauber formatiertes Druckdokument und öffnet
+// den Druckdialog. Dort kann der Nutzer "Als PDF speichern" wählen.
+function printFactCheckReport() {
+  const esc = s => (s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+  const nl2br = s => esc(s).replace(/\n/g, '<br>');
+  const val = id => (document.getElementById(id) || {}).value || '';
+
+  const claim     = val('fc-claim');
+  const source    = val('fc-source');
+  const used      = val('fc-sources-used');
+  const evidence  = val('fc-evidence');
+  const conclusion= val('fc-conclusion');
+  const reflection= val('fc-reflection');
+
+  const verdictLabels = {
+    'true':         { label: '✓ True',         color: '#2d7a3e', bg: '#d4edda' },
+    'false':        { label: '✗ False',         color: '#a12828', bg: '#fde8e8' },
+    'misleading':   { label: '⚠ Misleading',    color: '#856404', bg: '#fff3cd' },
+    'unverifiable': { label: '? Unverifiable',  color: '#555',    bg: '#eee'    }
+  };
+  const v = verdictLabels[verdict] || { label: '— not selected —', color:'#888', bg:'#f4f4f4' };
+
+  const today = new Date().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
+
+  const block = (title, content, minH) => `
+    <section class="fc-block">
+      <div class="fc-label">${title}</div>
+      <div class="fc-value" style="min-height:${minH||'1.4em'}">${content || '<span class="fc-empty">—</span>'}</div>
+    </section>`;
+
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Fact-Check Report</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:#fff; color:#1a1a1a;
+    font-family: 'DM Sans', Georgia, serif; font-size: 11pt; line-height: 1.55; }
+  .fc-doc { max-width: 180mm; margin: 0 auto; }
+  .fc-head { border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; margin-bottom: 18px; }
+  .fc-head h1 { font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20pt; margin: 0 0 4px; font-weight: 700; }
+  .fc-meta { font-size: 9pt; color:#555; letter-spacing: .08em; text-transform: uppercase; }
+  .fc-block { margin-bottom: 12px; page-break-inside: avoid; }
+  .fc-label { font-size: 8pt; letter-spacing:.15em; text-transform:uppercase;
+    color:#666; margin-bottom: 3px; font-weight: 600; }
+  .fc-value { border:1px solid #bbb; padding: 8px 10px; background:#fafafa;
+    white-space: pre-wrap; word-wrap: break-word; }
+  .fc-empty { color:#aaa; font-style: italic; }
+  .fc-verdict { display:inline-block; padding:6px 14px; border:2px solid ${v.color};
+    background:${v.bg}; color:${v.color}; font-weight:700; letter-spacing:.05em; }
+  .fc-foot { margin-top: 22px; padding-top: 10px; border-top: 1px solid #ccc;
+    font-size: 8.5pt; color:#666; display:flex; justify-content: space-between; }
+  .fc-sig { margin-top: 30px; display:flex; gap: 40px; }
+  .fc-sig > div { flex:1; border-top:1px solid #333; padding-top:4px; font-size:8.5pt; color:#555; }
+  @media print { .fc-noprint { display:none !important; } }
+  .fc-noprint { position:fixed; top:10px; right:10px; }
+  .fc-noprint button { font: inherit; padding:8px 14px; border:1px solid #333;
+    background:#1a1a1a; color:#fff; cursor:pointer; margin-left:6px; }
+  .fc-noprint button.secondary { background:#fff; color:#1a1a1a; }
+</style></head>
+<body>
+<div class="fc-noprint">
+  <button onclick="window.print()">🖨 Print / Save as PDF</button>
+  <button class="secondary" onclick="window.close()">Close</button>
+</div>
+<div class="fc-doc">
+  <div class="fc-head">
+    <h1>Fact-Check Report</h1>
+    <div class="fc-meta">Media Literacy · Fact-Checking Lab · ${esc(today)}</div>
+  </div>
+
+  ${block('Claim Investigated', nl2br(claim), '2em')}
+  ${block('Original Source / Platform', nl2br(source))}
+  ${block('Sources I Consulted', nl2br(used), '2em')}
+  ${block('Evidence Found', nl2br(evidence), '3em')}
+
+  <section class="fc-block">
+    <div class="fc-label">Verdict</div>
+    <div class="fc-verdict">${esc(v.label)}</div>
+  </section>
+
+  ${block('Conclusion', nl2br(conclusion), '3em')}
+  ${block('Media Literacy Reflection', nl2br(reflection), '3em')}
+
+  <div class="fc-sig">
+    <div>Name</div>
+    <div>Class / Course</div>
+    <div>Date</div>
+  </div>
+
+  <div class="fc-foot">
+    <span>Fact-Check Report · Media Literacy</span>
+    <span>Generated ${esc(today)}</span>
+  </div>
+</div>
+<script>
+  // Nach dem Laden automatisch Druckdialog öffnen ("Als PDF speichern" verfügbar)
+  window.addEventListener('load', function () { setTimeout(function(){ window.focus(); window.print(); }, 250); });
+<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank', 'width=900,height=1100');
+  if (!w) { alert('Bitte Pop-ups für diese Seite erlauben, damit der Druckdialog geöffnet werden kann.'); return; }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
 }
 
 // ===== MIND MAP POPUP DATA =====
